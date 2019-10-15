@@ -66,27 +66,9 @@ function initSessionHIREZ() {
 
 router.get('/obtenerCampeones', function(req, res) {
   initSessionHIREZ();
-
-  setTimeout(function(){
-    var signature = createSignature('getchampions');
-    var urlObtenerCampeones =
-    urls.urlBasePaladins + 'getchampionsjson/' + urls.hirezAPIKEY + '/' + signature +
-    '/' + sessionID.value +  '/'+  util.getDateTimeHiRez() +  '/9';
-    var options = {
-      url: urlObtenerCampeones,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-    request(options, function(error, response, body) {
-      var campeonesJSON = {"campeones":""}
-      campeonesJSON.campeones = JSON.parse(body);
-      res.send(campeonesJSON);
-    });
-  },1000)
-
-
+  getDataHIREZ(sessionID,'getchampions',res);
 });
+
 router.get('/obtenerDioses', function(req, res) {
   initSessionHIREZ();
   getDataHIREZ(sessionID,'getgods',res);
@@ -95,7 +77,12 @@ router.get('/obtenerDioses', function(req, res) {
 function getDataHIREZ(sessionID,signatureString,res){
   setTimeout(function(){
     var signature = createSignature(signatureString);
-    var url = urls.urlBaseSmite + 'getgodsjson/' + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+    if(signatureString == "getgods"){
+       var url = urls.urlBaseSmite + signatureString+'json/' + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+    }else if(signatureString == "getchampions"){
+       var url = urls.urlBasePaladins + signatureString+'json/' + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+    }
+   
     var options = {
       url: url,
       headers: {
@@ -103,8 +90,14 @@ function getDataHIREZ(sessionID,signatureString,res){
       }
     };
     request(options, function(error, response, body) {
-      var diosesJSON = {"dioses":JSON.parse(body)};
-      res.send(diosesJSON);
+      if(signatureString == "getgods"){
+        var diosesJSON = {"dioses":JSON.parse(body)};
+        res.send(diosesJSON);
+      }else if(signatureString == "getchampions"){
+        var campeonesJSON = {"campeones":JSON.parse(body)};
+        res.send(campeonesJSON);
+      }
+      
     });
   },1000)
 }
