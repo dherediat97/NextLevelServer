@@ -17,7 +17,9 @@
     "hoek": "^4.2.1",
     "method-override": "^2.3.10",
     "rxjs": "^5.5.6",
-    "zone.js": "^0.8.19"
+    "zone.js": "^0.8.19",
+    "cryptiles": ">=4.1.2",
+    "axios": ">=0.18.1"
   },
   "devDependencies": {
     "@types/jasmine": "~2.8.3",
@@ -27,7 +29,7 @@
     "enhanced-resolve": "^3.3.0",
     "jasmine-core": "~2.8.0",
     "jasmine-spec-reporter": "~4.2.1",
-    "karma": "~2.0.0",
+    "karma": "^4.3.0",
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage-istanbul-reporter": "^1.2.1",
     "karma-jasmine": "~1.1.0",
