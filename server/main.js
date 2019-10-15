@@ -15,7 +15,7 @@ var express = require("express"),
   app.use(bodyParser.urlencoded({
     extended: false
   }));
-  var port = 8081 || process.env.PORT;
+  var port = process.env.PORT || 8081;
   //console.log("Puerto: " + port)
   app.use(bodyParser.json());
   app.use(methodOverride());
