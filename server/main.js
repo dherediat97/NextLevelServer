@@ -15,7 +15,7 @@ var express = require("express"),
   app.use(bodyParser.urlencoded({
     extended: false
   }));
-  var port = 23316;
+  var port = 80;
   console.log("Puerto: " + port)
   app.use(bodyParser.json());
   app.use(methodOverride());
