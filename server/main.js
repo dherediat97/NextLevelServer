@@ -16,7 +16,6 @@ var express = require("express"),
     extended: false
   }));
   var port = process.env.PORT || 8081;
-  //console.log("Puerto: " + port)
   app.use(bodyParser.json());
   app.use(methodOverride());
   app.use(function(req, res, next) {
@@ -26,11 +25,11 @@ var express = require("express"),
     next();
   });
 
-  var router = express.Router();
+var router = express.Router();
 
-  router.get('/', function(req, res) {
-    res.send("Bienvenido a Next Level API");
-  });
+router.get('/', function(req, res) {
+  res.send("Bienvenido a la API de <b>NextLevel</b>");
+});
 
 
 function createSignature(metodo) {
@@ -60,29 +59,61 @@ function initSessionHIREZ() {
     });
 
   }).on("error", (err) => {
-
+    console.log(err);
   });
 }
 
-router.get('/obtenerCampeones', function(req, res) {
-  initSessionHIREZ();
-  getDataHIREZ(sessionID,'getchampions',res);
+//TODO Recoger version de la API del LOL antes de obtener los campeones.
+//No existe ese metodo, investigar otra manera
+var version = "9.20.1";
+
+router.get('/lol/obtenerCampeones', function(req, res) {
+  //URL Base campeones LOL
+  //https://ddragon.leagueoflegends.com/cdn/9.20.1/data/es_ES/champion.json
+  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version+'/data/es_ES/champion.json';
+  var options = {
+    url: url,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  request(options, function(error, response, body) {
+    var campeonesArr = JSON.parse(body);
+    //console.log(campeonesArr)
+    var campeones = [];
+    //console.log(campeonesArr.data)
+    campeones.push(campeonesArr.data);
+    res.contentType('application/json');
+    res.send(JSON.stringify({"campeones":campeones}));
+  });
+
 });
 
-router.get('/obtenerDioses', function(req, res) {
+router.get('/paladins/obtenerCampeon', function(req, res) {
   initSessionHIREZ();
-  getDataHIREZ(sessionID,'getgods',res);
+  getDataHIREZ(sessionID,'getchampioncards',res,'json');
 });
 
-function getDataHIREZ(sessionID,signatureString,res){
+router.get('/paladins/obtenerCampeones', function(req, res) {
+  initSessionHIREZ();
+  getDataHIREZ(sessionID,'getchampions',res,'json');
+});
+
+router.get('/smite/obtenerDioses', function(req, res) {
+  initSessionHIREZ();
+  getDataHIREZ(sessionID,'getgods',res,'json');
+});
+
+function getDataHIREZ(sessionID,signatureString,res, formatDataType){
   setTimeout(function(){
     var signature = createSignature(signatureString);
     if(signatureString == "getgods"){
-       var url = urls.urlBaseSmite + signatureString+'json/' + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+      var url = urls.urlBaseSmite + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
     }else if(signatureString == "getchampions"){
-       var url = urls.urlBasePaladins + signatureString+'json/' + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+      var url = urls.urlBasePaladins + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+    }else if(signatureString == "getchampioncards"){
+      var url = urls.urlBasePaladins + signatureString+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() +"/2205"+ '/9';
     }
-   
     var options = {
       url: url,
       headers: {
@@ -96,14 +127,16 @@ function getDataHIREZ(sessionID,signatureString,res){
       }else if(signatureString == "getchampions"){
         var campeonesJSON = {"campeones":JSON.parse(body)};
         res.send(campeonesJSON);
+      }else if(signatureString == "getchampioncards"){
+        var campeonJSON = {"campeon":JSON.parse(body)};
+        res.send(campeonJSON);
       }
-      
     });
   },1000)
 }
 
 
-router.get('/leagueOfLegends/buscarInvocador/:nombre', function(req, res) {
+/*router.get('/leagueOfLegends/buscarInvocador/:nombre', function(req, res) {
 
   var options = {
     url: urls.urlBaseLOL + 'summoner/v3/summoners/by-name/' + req.params.nombre,
@@ -115,7 +148,7 @@ router.get('/leagueOfLegends/buscarInvocador/:nombre', function(req, res) {
   request(options, function(error, response, body) {
     res.send(response);
   });
-});
+});*/
 
 app.use(router);
 
