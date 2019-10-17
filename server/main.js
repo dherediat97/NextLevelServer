@@ -108,7 +108,7 @@ function getDataHIREZ(sessionID,signatureString,res, formatDataType){
   setTimeout(function(){
     var signature = createSignature(signatureString);
     if(signatureString == "getgods"){
-      var url = urls.urlBaseSmite + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+      var url = urls.urlBaseSmite + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/1';
     }else if(signatureString == "getchampions"){
       var url = urls.urlBasePaladins + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
     }else if(signatureString == "getchampioncards"){
