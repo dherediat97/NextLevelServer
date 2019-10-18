@@ -79,40 +79,51 @@ router.get('/lol/obtenerCampeones', function(req, res) {
   };
   request(options, function(error, response, body) {
     var campeonesArr = JSON.parse(body);
-    //console.log(campeonesArr)
-    var campeones = [];
-    //console.log(campeonesArr.data)
-    campeones.push(campeonesArr.data);
     res.contentType('application/json');
-    res.send(JSON.stringify({"campeones":campeones}));
+    res.send(JSON.stringify(campeonesArr));
   });
 
 });
-
-router.get('/paladins/obtenerCampeon', function(req, res) {
+router.get('/paladins/obtenerCampeon/:idCampeon', function(req, res) {
   initSessionHIREZ();
-  getDataHIREZ(sessionID,'getchampioncards',res,'json');
+  var idCampeon = req.params.idCampeon;
+  
+  if(idCampeon != undefined){
+    getDataHIREZ(sessionID,'getchampion',res,'json',idCampeon);
+  }
+});
+
+router.get('/paladins/obtenerSkinCampeon/:idCampeon', function(req, res) {
+  initSessionHIREZ();
+  var idCampeon = req.params.idCampeon;
+  if(idCampeon != undefined){
+    getDataHIREZ(sessionID,'getchampionskins',res,'json',idCampeon);
+  }
 });
 
 router.get('/paladins/obtenerCampeones', function(req, res) {
   initSessionHIREZ();
-  getDataHIREZ(sessionID,'getchampions',res,'json');
+  getDataHIREZ(sessionID,'getchampions',res,'json',null);
 });
 
 router.get('/smite/obtenerDioses', function(req, res) {
   initSessionHIREZ();
-  getDataHIREZ(sessionID,'getgods',res,'json');
+  getDataHIREZ(sessionID,'getgods',res,'json',null);
 });
 
-function getDataHIREZ(sessionID,signatureString,res, formatDataType){
+function getDataHIREZ(sessionID,signatureString,res, formatDataType,idCampeon){
   setTimeout(function(){
     var signature = createSignature(signatureString);
+
     if(signatureString == "getgods"){
       var url = urls.urlBaseSmite + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/1';
     }else if(signatureString == "getchampions"){
       var url = urls.urlBasePaladins + signatureString+formatDataType + "/"+urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
-    }else if(signatureString == "getchampioncards"){
-      var url = urls.urlBasePaladins + signatureString+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() +"/2205"+ '/9';
+    }else if(signatureString == "getchampion"){
+      var signature = createSignature("getchampions");
+      var url = urls.urlBasePaladins + "getchampions"+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+    }else if(signatureString == "getchampionskins"){
+      var url = urls.urlBasePaladins + signatureString+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() +"/" + idCampeon+ '/9';
     }
     var options = {
       url: url,
@@ -127,9 +138,14 @@ function getDataHIREZ(sessionID,signatureString,res, formatDataType){
       }else if(signatureString == "getchampions"){
         var campeonesJSON = {"campeones":JSON.parse(body)};
         res.send(campeonesJSON);
-      }else if(signatureString == "getchampioncards"){
-        var campeonJSON = {"campeon":JSON.parse(body)};
+      }else if(signatureString == "getchampion"){
+        var campeones = JSON.parse(body);
+        var campeon = campeones.filter(item => item.id == idCampeon);
+        var campeonJSON = {"campeon":campeon};
         res.send(campeonJSON);
+      }else if(signatureString == "getchampionskins"){
+        var skinCampeonJSON = {"skin":JSON.parse(body)};
+        res.send(skinCampeonJSON);
       }
     });
   },1000)
