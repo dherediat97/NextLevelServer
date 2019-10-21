@@ -84,6 +84,37 @@ router.get('/lol/obtenerCampeones', function(req, res) {
   });
 
 });
+router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
+  //URL Base campeones LOL
+  //https://ddragon.leagueoflegends.com/cdn/9.20.1/data/es_ES/champion.json
+  var nombreCampeon = req.params.nombreCampeon;
+  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version+'/data/es_ES/champion/'+nombreCampeon+'.json';
+  var options = {
+    url: url,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  request(options, function(error, response, body) {
+    var campeones = JSON.parse(body);
+    
+    //console.log(nombreCampeon)
+    var campeonesArrAux = campeones.data;
+    //console.log(campeonesArrAux)
+    for (const campeon in campeonesArrAux) {
+      if (campeon == nombreCampeon) {
+        const campeonJSON = campeonesArrAux[campeon];
+        //console.log(campeonJSON)
+        res.contentType('application/json');
+        res.send(campeonJSON);
+        
+      }
+    }
+    
+    
+  });
+
+});
 router.get('/paladins/obtenerCampeon/:idCampeon', function(req, res) {
   initSessionHIREZ();
   var idCampeon = req.params.idCampeon;
@@ -150,21 +181,6 @@ function getDataHIREZ(sessionID,signatureString,res, formatDataType,idCampeon){
     });
   },1000)
 }
-
-
-/*router.get('/leagueOfLegends/buscarInvocador/:nombre', function(req, res) {
-
-  var options = {
-    url: urls.urlBaseLOL + 'summoner/v3/summoners/by-name/' + req.params.nombre,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Riot-Token': urls.riotAPIKEY
-    }
-  };
-  request(options, function(error, response, body) {
-    res.send(response);
-  });
-});*/
 
 app.use(router);
 
