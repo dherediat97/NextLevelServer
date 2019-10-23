@@ -65,7 +65,7 @@ function initSessionHIREZ() {
 
 //TODO Recoger version de la API del LOL antes de obtener los campeones.
 //No existe ese metodo, investigar otra manera
-var version = "9.20.1";
+var version = "9.21.1";
 
 router.get('/lol/obtenerCampeones', function(req, res) {
   //URL Base campeones LOL
