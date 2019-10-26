@@ -115,6 +115,28 @@ router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
   });
 
 });
+router.get('/lol/obtenerCampeonesGratuitos', function(req, res) {
+  var url = 'https://euw1.api.riotgames.com/lol/platform/v3/champion-rotations';
+  var options = {
+    url: url,
+    headers: {
+      "X-Riot-Token": urls.riotAPIKEY,
+      'Content-Type': 'application/json'
+    }
+  };
+  request(options, function(error, response, body) {
+    var campeones = JSON.parse(body);
+    var campeonesArrAux = [];
+    var campeonJSON = campeones.freeChampionIdsForNewPlayers;
+    for (let index = 0; index < campeonJSON.length; index++) {
+      const element = campeonJSON[index];
+      var elementAux = element.toString();
+      campeonesArrAux.push(elementAux);
+    }
+    res.contentType('application/json');
+    res.send(campeonesArrAux);
+  });
+});
 router.get('/paladins/obtenerCampeon/:idCampeon', function(req, res) {
   initSessionHIREZ();
   var idCampeon = req.params.idCampeon;
