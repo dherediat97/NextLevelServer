@@ -1,12 +1,9 @@
-var riotAPIKEY = "RGAPI-9af234dd-772f-460c-ac6c-7b5c1ba62488";
-var hirezAPIKEY = "2579";
-var hirezAUTHKEY = "A31B234EB23A4E3D8EE689E0FD4AD813";
 var urlBasePaladins = "http://api.paladins.com/paladinsapi.svc/";
 var urlBaseSmite = "http://api.smitegame.com/smiteapi.svc/";
 var urlBaseLOL = 'https://euw1.api.riotgames.com/lol/';
-exports.riotAPIKEY = riotAPIKEY;
-exports.hirezAPIKEY = hirezAPIKEY;
-exports.hirezAUTHKEY = hirezAUTHKEY;
+exports.riotAPIKEY = process.env.RIOT_API_KEY;
+exports.hirezAPIKEY = process.env.HIREZ_API_KEY;
+exports.hirezAUTHKEY = process.env.HIREZ_AUTH_KEY;
 exports.urlBasePaladins = urlBasePaladins;
 exports.urlBaseSmite = urlBaseSmite;
 exports.urlBaseLOL = urlBaseLOL;
