@@ -163,7 +163,13 @@ router.get('/smite/obtenerDioses', function(req, res) {
   initSessionHIREZ();
   getDataHIREZ(sessionID,'getgods',res,'json',null);
 });
-
+router.get('/smite/obtenerSkinDios/:idDios', function(req, res) {
+  initSessionHIREZ();
+  var idDios = req.params.idDios;
+  if(idDios != undefined){
+    getDataHIREZ(sessionID,'getgodskins',res,'json',idDios);
+  }
+});
 router.get('/smite/obtenerDios/:idDios', function(req, res) {
   initSessionHIREZ();
   var idDios = req.params.idDios;
@@ -187,6 +193,8 @@ function getDataHIREZ(sessionID,signatureString,res, formatDataType,idCampeon){
       var url = urls.urlBasePaladins + "getchampions"+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
     }else if(signatureString == "getchampionskins"){
       var url = urls.urlBasePaladins + signatureString+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() +"/" + idCampeon+ '/9';
+    }else if(signatureString == "getgodskins"){
+      var url = urls.urlBaseSmite + signatureString+formatDataType +"/"+ urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() +"/" + idCampeon+ '/9';
     }
     var options = {
       url: url,
@@ -214,6 +222,9 @@ function getDataHIREZ(sessionID,signatureString,res, formatDataType,idCampeon){
       }else if(signatureString == "getchampionskins"){
         var skinCampeonJSON = {"skin":JSON.parse(body)};
         res.send(skinCampeonJSON);
+      }else if(signatureString == "getgodskins"){
+        var skindiosJSON = {"skin":JSON.parse(body)};
+        res.send(skindiosJSON);
       }
     });
   },1000)
