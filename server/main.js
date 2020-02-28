@@ -63,14 +63,12 @@ function initSessionHIREZ() {
   });
 }
 
-//TODO Recoger version de la API del LOL antes de obtener los campeones.
-//No existe ese metodo, investigar otra manera
-var version = "9.21.1";
-
+var version = "";
+setTimeout(function(){
+  version = obtenerVersion();
+},1000)
 router.get('/lol/obtenerCampeones', function(req, res) {
-  //URL Base campeones LOL
-  //https://ddragon.leagueoflegends.com/cdn/9.20.1/data/es_ES/champion.json
-  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version+'/data/es_ES/champion.json';
+  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version.dd+'/data/es_ES/champion.json';
   var options = {
     url: url,
     headers: {
@@ -85,10 +83,8 @@ router.get('/lol/obtenerCampeones', function(req, res) {
 
 });
 router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
-  //URL Base campeones LOL
-  //https://ddragon.leagueoflegends.com/cdn/9.20.1/data/es_ES/champion.json
   var nombreCampeon = req.params.nombreCampeon;
-  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version+'/data/es_ES/champion/'+nombreCampeon+'.json';
+  var url = 'https://ddragon.leagueoflegends.com/cdn/'+version.dd+'/data/es_ES/champion/'+nombreCampeon+'.json';
   var options = {
     url: url,
     headers: {
@@ -97,7 +93,7 @@ router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
   };
   request(options, function(error, response, body) {
     var campeones = JSON.parse(body);
-    
+
     //console.log(nombreCampeon)
     var campeonesArrAux = campeones.data;
     //console.log(campeonesArrAux)
@@ -107,15 +103,31 @@ router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
         //console.log(campeonJSON)
         res.contentType('application/json');
         res.send(campeonJSON);
-        
+
       }
     }
-    
-    
+
+
   });
 
 });
-router.get('/lol/obtenerCampeonesGratuitos', function(req, res) {
+function obtenerVersion(){
+  var versionDDragon = "";
+  var url = 'https://ddragon.leagueoflegends.com/realms/na.json';
+  var options = {
+    url: url,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  request(options, function(error, response, body) {
+    version = JSON.parse(body);
+    versionDDragon = version.dd;
+  })
+
+  return versionDDragon;
+}
+/*router.get('/lol/obtenerCampeonesGratuitos', function(req, res) {
   var url = 'https://euw1.api.riotgames.com/lol/platform/v3/champion-rotations';
   var options = {
     url: url,
@@ -136,11 +148,11 @@ router.get('/lol/obtenerCampeonesGratuitos', function(req, res) {
     res.contentType('application/json');
     res.send(campeonesArrAux);
   });
-});
+});*/
 router.get('/paladins/obtenerCampeon/:idCampeon', function(req, res) {
   initSessionHIREZ();
   var idCampeon = req.params.idCampeon;
-  
+
   if(idCampeon != undefined){
     getDataHIREZ(sessionID,'getchampion',res,'json',idCampeon);
   }
