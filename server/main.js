@@ -77,6 +77,7 @@ router.get('/lol/obtenerCampeones', function(req, res) {
   };
   request(options, function(error, response, body) {
     var campeonesArr = JSON.parse(body);
+    campeonesArr.version = version.dd;
     res.contentType('application/json');
     res.send(JSON.stringify(campeonesArr));
   });
