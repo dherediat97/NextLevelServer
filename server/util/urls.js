@@ -1,5 +1,5 @@
-var urlBasePaladins = "http://api.paladins.com/paladinsapi.svc/";
-var urlBaseSmite = "http://api.smitegame.com/smiteapi.svc/";
+var urlBasePaladins = "https://api.paladins.com/paladinsapi.svc/";
+var urlBaseSmite = "https://api.smitegame.com/smiteapi.svc/";
 var urlBaseLOL = 'https://euw1.api.riotgames.com/lol/';
 exports.riotAPIKEY = process.env.RIOT_API_KEY;
 exports.hirezAPIKEY = process.env.HIREZ_API_KEY;

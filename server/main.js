@@ -12,6 +12,7 @@ var express = require("express"),
 var sessionID = {
     "value": ""
 }
+var sessionID
 app.use(bodyParser.urlencoded({
     extended: false
 }));
@@ -27,45 +28,56 @@ app.use(function(req, res, next) {
 
 var router = express.Router();
 
-router.get('/', function(req, res) {
-    res.send("Bienvenido a la API de <b>NextLevel</b>");
-});
+router.get('/', function(req, res) {});
 
 
-function createSignature(metodo) {
-    var data = urls.hirezAPIKEY + metodo + urls.hirezAUTHKEY + util.getDateTimeHiRez();
-    var signature = crypto.createHash('md5').update(data).digest("hex");
+function createSignature(url) {
+    var data = urls.hirezAPIKEY + url + urls.hirezAUTHKEY + util.getDateTimeHiRez();
+    var signature = crypto.createHash('md5').update(data).digest("hex").toLowerCase();
+    console.log("signature = " + signature)
     return signature;
 }
 
-function initSessionHIREZ() {
+function initSessionHIREZ(gameType) {
     var session_ID = "";
-    var signature = createSignature('createsession');
-    if (urls.hirezAPIKEY != undefined) {
-        var urlCreateSession = urls.urlBasePaladins + 'createsessionjson/' + urls.hirezAPIKEY + '/' + signature + '/' + util.getDateTimeHiRez();
-        http.get(urlCreateSession, (resp) => {
-            var data = '';
-            resp.on('data', (chunk) => {
-                data += chunk;
-            });
-            resp.on('end', () => {
-                console.log(data)
-                var datosJSON = JSON.parse(data);
-                if (datosJSON.session_id != null || datosJSON.session_id != "" || datosJSON.ret_msg == "Approved")
-                    session_ID = datosJSON.session_id;
-                sessionID.value = session_ID;
-
-            });
-        }).on("error", (err) => {
-            console.error(err);
+     if(gameType == 0){
+        var signature = createSignature("createsession");
+        var urlCreateSession = urls.urlBasePaladins + 'createsessionjson/'
+         + urls.hirezAPIKEY + '/' + signature + '/' + util.getDateTimeHiRez();
+        var options = {
+            url: urlCreateSession,
+            headers: {
+                'Content-Type': 'application/json;charseft=utf-8'
+            }
+        };
+        request(options,  function(error, response, body){
+            var datosJSON = JSON.parse(body);
+            if (datosJSON.session_id != null || datosJSON.session_id != "" || datosJSON.ret_msg == "Approved") {
+                session_ID = datosJSON.session_id;
+                sessionID = session_ID;
+            }
+        });
+    }else{
+        var signature = createSignature('createsession');
+        var urlCreateSession = urls.urlBaseSmite + 'createsessionjson/'
+         + urls.hirezAPIKEY + '/' + signature + '/' + util.getDateTimeHiRez();
+        var options = {
+            url: urlCreateSession,
+            headers: {
+                'Content-Type': 'application/json;charseft=utf-8'
+            }
+        };
+        request(options,  function(error, response, body){
+            var datosJSON = JSON.parse(body);
+            if (datosJSON.session_id != null || datosJSON.session_id != "" || datosJSON.ret_msg == "Approved") {
+                session_ID = datosJSON.session_id;
+                sessionID = session_ID;
+            }
         });
     }
 }
 
-var version = "";
-setTimeout(function() {
-    version = obtenerVersion();
-}, 1000)
+
 router.get('/lol/obtenerCampeones', function(req, res) {
     var url = 'https://ddragon.leagueoflegends.com/cdn/' + version.dd + '/data/es_ES/champion.json';
     var options = {
@@ -99,11 +111,9 @@ router.get('/lol/obtenerCampeon/:nombreCampeon', function(req, res) {
                 const campeonJSON = campeonesArrAux[campeon];
                 res.contentType('application/json');
                 res.send(campeonJSON);
-
             }
         }
     });
-
 });
 
 function obtenerVersion() {
@@ -123,105 +133,104 @@ function obtenerVersion() {
     return versionDDragon;
 }
 router.get('/paladins/obtenerCampeon/:idCampeon', function(req, res) {
-    initSessionHIREZ();
+    initSessionHIREZ(0);
     var idCampeon = req.params.idCampeon;
-
     if (idCampeon != undefined) {
-        getDataHIREZ(sessionID, 'getchampion', res, 'json', idCampeon);
+        getDataHIREZ('getchampion', res, 'json', idCampeon);
     }
 });
 
 router.get('/paladins/obtenerSkinCampeon/:idCampeon', function(req, res) {
-    initSessionHIREZ();
+    initSessionHIREZ(0);
     var idCampeon = req.params.idCampeon;
     if (idCampeon != undefined) {
-        getDataHIREZ(sessionID, 'getchampionskins', res, 'json', idCampeon);
+        getDataHIREZ('getchampionskins', res, 'json', idCampeon);
     }
 });
 
 router.get('/paladins/obtenerCampeones', function(req, res) {
-    initSessionHIREZ();
-    if (sessionID != undefined) {
-        getDataHIREZ(sessionID, 'getchampions', res, 'json', null);
-    }
+    initSessionHIREZ(0);
+    getDataHIREZ('getchampions', res, 'json', null);
 });
 
 router.get('/smite/obtenerDioses', function(req, res) {
-    initSessionHIREZ();
-    if (sessionID != undefined) {
-        getDataHIREZ(sessionID, 'getgods', res, 'json', null);
-    }
+    initSessionHIREZ(1);
+    getDataHIREZ('getgods', res, 'json', null);
 });
 router.get('/smite/obtenerSkinDios/:idDios', function(req, res) {
-    initSessionHIREZ();
+    initSessionHIREZ(1);
     var idDios = req.params.idDios;
     if (idDios != undefined) {
-        if (sessionID != undefined) {
-            getDataHIREZ(sessionID, 'getgodskins', res, 'json', idDios);
-        }
+        getDataHIREZ('getgodskins', res, 'json', idDios);
     }
 });
 router.get('/smite/obtenerDios/:idDios', function(req, res) {
-    initSessionHIREZ();
+    initSessionHIREZ(1);
     var idDios = req.params.idDios;
     if (idDios != undefined) {
-        if (sessionID != undefined) {
-            getDataHIREZ(sessionID, 'getgod', res, 'json', idDios);
-        }
+        getDataHIREZ('getgod', res, 'json', idDios);
     }
 });
 
-function getDataHIREZ(sessionID, signatureString, res, formatDataType, idCampeon) {
+function getDataHIREZ(signatureString, res, formatDataType, idCampeon) {
+    console.log("signatureString = "+signatureString);
     var signature = createSignature(signatureString);
-
     if (signatureString == "getgods") {
-        var url = urls.urlBaseSmite + signatureString + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+        var url = urls.urlBaseSmite + "getgods" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' + 
+        util.getDateTimeHiRez() + '/9';
     } else if (signatureString == "getgod") {
-        var signature = createSignature("getgods");
-        var url = urls.urlBaseSmite + "getgods" + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+        var url = urls.urlBaseSmite + "getgod" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' +
+         util.getDateTimeHiRez() + '/9';
     } else if (signatureString == "getchampions") {
-        var url = urls.urlBasePaladins + signatureString + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+        var url = urls.urlBasePaladins + "getchampions" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' +
+         util.getDateTimeHiRez() + '/9';
     } else if (signatureString == "getchampion") {
-        var signature = createSignature("getchampions");
-        var url = urls.urlBasePaladins + "getchampions" + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + '/9';
+        var url = urls.urlBasePaladins + "getchampion" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' + 
+        util.getDateTimeHiRez() + '/9';
     } else if (signatureString == "getchampionskins") {
-        var url = urls.urlBasePaladins + signatureString + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + "/" + idCampeon + '/9';
+        var url = urls.urlBasePaladins + "getchampionskins" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' + 
+        util.getDateTimeHiRez() + "/" + idCampeon + '/9';
     } else if (signatureString == "getgodskins") {
-        var url = urls.urlBaseSmite + signatureString + formatDataType + "/" + urls.hirezAPIKEY + '/' + signature + '/' + sessionID.value + '/' + util.getDateTimeHiRez() + "/" + idCampeon + '/9';
+        var url = urls.urlBaseSmite + "signatureString" + formatDataType + "/" 
+        + urls.hirezAPIKEY + '/' + signature + '/' + sessionID + '/' + 
+        util.getDateTimeHiRez() + "/" + idCampeon + '/9';
     }
-    var options = {
-        url: url,
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
-    request(options, function(error, response, body) {
-        if (body != undefined) {
-            if (signatureString == "getgods") {
-                var diosesJSON = { "dioses": JSON.parse(body) };
-                res.send(diosesJSON);
-            } else if (signatureString == "getgod") {
-                var dioses = JSON.parse(body);
-                var dios = dioses.filter(item => item.id == idCampeon);
-                var diosJSON = { "dios": dios };
-                res.send(diosJSON);
-            } else if (signatureString == "getchampions") {
-                var campeonesJSON = { "campeones": JSON.parse(body) };
-                res.send(campeonesJSON);
-            } else if (signatureString == "getchampion") {
-                var campeones = JSON.parse(body);
-                var campeon = campeones.filter(item => item.id == idCampeon);
-                var campeonJSON = { "campeon": campeon };
-                res.send(campeonJSON);
-            } else if (signatureString == "getchampionskins") {
-                var skinCampeonJSON = { "skin": JSON.parse(body) };
-                res.send(skinCampeonJSON);
-            } else if (signatureString == "getgodskins") {
-                var skindiosJSON = { "skin": JSON.parse(body) };
-                res.send(skindiosJSON);
-            }
-        }
-    });
+    setTimeout(function(){
+        console.log("url = "+url)
+        console.log("sessionID = "+sessionID)
+        request(url, function(error, response, body) {
+                console.log("body = "+body)
+                console.log("response = "+response)
+                if (signatureString == "getgods") {
+                    var diosesJSON = { "dioses": JSON.parse(body) };
+                    res.send(diosesJSON);
+                } else if (signatureString == "getgod") {
+                    var dioses = JSON.parse(body);
+                    var dios = dioses.filter(item => item.id == idCampeon);
+                    var diosJSON = { "dios": dios };
+                    res.send(diosJSON);
+                } else if (signatureString == "getchampions") {
+                    var campeonesJSON = { "campeones": JSON.parse(body) };
+                    res.send(campeonesJSON);
+                } else if (signatureString == "getchampion") {
+                    var campeones = JSON.parse(body);
+                    var campeon = campeones.filter(item => item.id == idCampeon);
+                    var campeonJSON = { "campeon": campeon };
+                    res.send(campeonJSON);
+                } else if (signatureString == "getchampionskins") {
+                    var skinCampeonJSON = { "skin": JSON.parse(body) };
+                    res.send(skinCampeonJSON);
+                } else if (signatureString == "getgodskins") {
+                    var skindiosJSON = { "skin": JSON.parse(body) };
+                    res.send(skindiosJSON);
+                }
+        });
+    },500)
 }
 app.on("error", function(error) {
     if (error.message.code == 'ETIMEDOUT') {
@@ -229,6 +238,17 @@ app.on("error", function(error) {
     }
 })
 app.use(router);
+
+var version = "";
+setTimeout(function() {
+    version = obtenerVersion();
+        if(version != null)
+            console.log(colors.green("LOL API ONLINE"));
+    request(urls.urlBasePaladins + 'pingjson', (error,response,body) => {    
+        if(error == null)
+            console.log(colors.green("HI REZ API ONLINE"));
+    });
+}, 1000)
 
 app.listen(port, function() {
     console.log(colors.green("API escuchando en http://localhost:" + port));
